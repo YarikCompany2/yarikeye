@@ -38,7 +38,6 @@ void yarikeye_file_write(char *path, char *buffer);
 
 #endif // YARIKEYE_H
 
-#define YARIKEYE_IMPLEMENTATION
 #ifdef YARIKEYE_IMPLEMENTATION
 
 #include <stdio.h>
