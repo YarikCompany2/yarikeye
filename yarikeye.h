@@ -13,17 +13,22 @@ typedef struct {
     char *buffer;
 } String;
 
+typedef struct {
+    char *buffer;
+    int start_index;
+    int final_index;
+} StringSlice;
+
 // Initializes the String structure
 String yarikeye_string_init();
-String yarikeye_string_init_and_fill(char *buffer);
 // Frees the String structure
 void yarikeye_string_free(String *str);
 // Gets count
 int yarikeye_string_count_get(String *str);
-// Copies the buffer into newly created string
-void yarikeye_string_assign(String *str, const char *buffer);
+// Copies the buffer into newly created string. Need to be deleted
+String yarikeye_string_assign(const char *buffer);
 // Appends the buffer to the existing string
-void yarikeye_string_append(String *str, const char *buffer);
+String yarikeye_string_append(String *str, const char *buffer);
 // Compares two Strings, sensetive to the case
 bool yarikeye_string_compare(String *str1, String *str2);
 // Prints the string
@@ -51,14 +56,6 @@ String yarikeye_string_init() {
     str.buffer = NULL;
     str.capacity = 0;
     str.count = 0;
-
-    return str;
-}
-
-String yarikeye_string_init_and_fill(char *buffer) {
-    String str = yarikeye_string_init();
-
-    yarikeye_string_assign(&str, buffer);
 
     return str;
 }
@@ -117,39 +114,45 @@ static void string_print_debug(String *str) {
     printf("str->capacity: %d\n", str->capacity);
 }
 
-void yarikeye_string_assign(String *str, const char *buffer) {
+String yarikeye_string_assign(const char *buffer) {
+    String str = yarikeye_string_init();
+
     size_t buffer_size = strlen(buffer);
 
-    if (str->capacity < buffer_size + 1) {
-        string_capacity_grow_to_size(str, buffer_size + 1);
-    }
+    string_capacity_grow_to_size(&str, buffer_size + 1);
 
     for (int i = 0; i < buffer_size; i++)
-        str->buffer[i] = buffer[i];
+        str.buffer[i] = buffer[i];
 
-    str->count = buffer_size;
+    str.count = buffer_size;
 
-    str->buffer[buffer_size] = '\0';
+    str.buffer[buffer_size] = '\0';
 
-    string_print_debug(str);
+    string_print_debug(&str);
+
+    return str;
 }
 
-void yarikeye_string_append(String *str, const char *buffer) {
+String yarikeye_string_append(String *str, const char *buffer) {
+    String new_str = yarikeye_string_assign(str->buffer);
+
     size_t buffer_size = strlen(buffer);
-    size_t needed_capacity = str->count + buffer_size;
+    size_t needed_capacity = new_str.count + buffer_size;
 
     if (str->capacity < needed_capacity + 1)
-        string_capacity_grow_to_size(str, needed_capacity + 1);
+        string_capacity_grow_to_size(&new_str, needed_capacity + 1);
 
-    for (int i = str->count, j = 0; i < needed_capacity; i++, j++) {
-        str->buffer[i] = buffer[j];
+    for (int i = new_str.count, j = 0; i < needed_capacity; i++, j++) {
+        new_str.buffer[i] = buffer[j];
     }
 
-    str->count += buffer_size;
+    new_str.count += buffer_size;
 
-    str->buffer[needed_capacity] = '\0';
+    new_str.buffer[needed_capacity] = '\0';
 
-    string_print_debug(str);
+    string_print_debug(&new_str);
+
+    return new_str;
 }
 
 bool yarikeye_string_compare(String *str1, String *str2) {
@@ -165,6 +168,24 @@ bool yarikeye_string_compare(String *str1, String *str2) {
 
 void yarikeye_string_print(const String *str) {
     printf("%s\n", str->buffer);
+}
+
+// --- STRING SLICE ---
+
+StringSlice yarikeye_string_slice_init(char *buffer, int start, int final) {
+    StringSlice string_slice;
+
+    string_slice.buffer = buffer;
+    string_slice.start_index = start;
+    string_slice.final_index = final;
+
+    return string_slice;
+}
+
+void yarikeye_string_slice_print(StringSlice *string_slice) {
+    for (int i = string_slice->start_index; i < string_slice->final_index - string_slice->start_index; i++) {
+        putchar(string_slice->buffer[i]);
+    }
 }
 
 // --- FILES ---
