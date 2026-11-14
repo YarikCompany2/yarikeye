@@ -28,7 +28,9 @@ int yarikeye_string_count_get(String *str);
 // Copies the buffer into newly created string. Need to be deleted
 String yarikeye_string_assign(const char *buffer);
 // Appends the buffer to the existing string
-String yarikeye_string_append(String *str, const char *buffer);
+void yarikeye_string_append(String *str, const char *buffer);
+// Creates new string and appends the buffer to that string
+String yarikeye_string_append_and_create(String *str, const char *buffer);
 // Compares two Strings, sensetive to the case
 bool yarikeye_string_compare(String *str1, String *str2);
 // Prints the string
@@ -43,6 +45,7 @@ void yarikeye_file_write(char *path, char *buffer);
 
 #endif // YARIKEYE_H
 
+#define YARIKEYE_IMPLEMENTATION
 #ifdef YARIKEYE_IMPLEMENTATION
 
 #include <stdio.h>
@@ -133,26 +136,30 @@ String yarikeye_string_assign(const char *buffer) {
     return str;
 }
 
-String yarikeye_string_append(String *str, const char *buffer) {
+String yarikeye_string_append_and_create(String *str, const char *buffer) {
     String new_str = yarikeye_string_assign(str->buffer);
 
-    size_t buffer_size = strlen(buffer);
-    size_t needed_capacity = new_str.count + buffer_size;
-
-    if (str->capacity < needed_capacity + 1)
-        string_capacity_grow_to_size(&new_str, needed_capacity + 1);
-
-    for (int i = new_str.count, j = 0; i < needed_capacity; i++, j++) {
-        new_str.buffer[i] = buffer[j];
-    }
-
-    new_str.count += buffer_size;
-
-    new_str.buffer[needed_capacity] = '\0';
-
-    string_print_debug(&new_str);
+    yarikeye_string_append(&new_str, buffer);
 
     return new_str;
+}
+
+void yarikeye_string_append(String *str, const char *buffer){
+    size_t buffer_size = strlen(buffer);
+    size_t needed_capacity = str->count + buffer_size;
+
+    if (str->capacity < needed_capacity + 1)
+        string_capacity_grow_to_size(str, needed_capacity + 1);
+
+    for (int i = str->count, j = 0; i < needed_capacity; i++, j++) {
+        str->buffer[i] = buffer[j];
+    }
+
+    str->count += buffer_size;
+
+    str->buffer[needed_capacity] = '\0';
+
+    string_print_debug(str);
 }
 
 bool yarikeye_string_compare(String *str1, String *str2) {
