@@ -39,13 +39,12 @@ void yarikeye_string_print(const String *str);
 // --- FILES ---
 
 // Reads file and fills the buffer with the text
-char *yarikeye_file_read(char *path);
+char *yarikeye_file_read(const char *path, size_t *out_file_size);
 // Writes the buffer to specified file
 void yarikeye_file_write(char *path, char *buffer);
 
 #endif // YARIKEYE_H
 
-#define YARIKEYE_IMPLEMENTATION
 #ifdef YARIKEYE_IMPLEMENTATION
 
 #include <stdio.h>
@@ -112,9 +111,6 @@ static void string_print_debug(String *str) {
         }
     }
     putchar('\n');
-
-    printf("str->count: %d\n", str->count);
-    printf("str->capacity: %d\n", str->capacity);
 }
 
 String yarikeye_string_assign(const char *buffer) {
@@ -130,8 +126,6 @@ String yarikeye_string_assign(const char *buffer) {
     str.count = buffer_size;
 
     str.buffer[buffer_size] = '\0';
-
-    string_print_debug(&str);
 
     return str;
 }
@@ -158,8 +152,6 @@ void yarikeye_string_append(String *str, const char *buffer){
     str->count += buffer_size;
 
     str->buffer[needed_capacity] = '\0';
-
-    string_print_debug(str);
 }
 
 bool yarikeye_string_compare(String *str1, String *str2) {
@@ -197,7 +189,7 @@ void yarikeye_string_slice_print(StringSlice *string_slice) {
 
 // --- FILES ---
 
-char *yarikeye_file_read(char *path) {
+char *yarikeye_file_read(const char *path, size_t *out_file_size) {
     FILE *file = fopen(path, "rb");
     if (!file) {
         fprintf(stderr, "Can't open the file %s\n", path);
@@ -217,6 +209,9 @@ char *yarikeye_file_read(char *path) {
     }
 
     buffer[file_size] = '\0';
+
+    if (out_file_size) 
+        *out_file_size = bytes_count;
 
     fclose(file);
 
